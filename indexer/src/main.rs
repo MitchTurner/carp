@@ -3,7 +3,7 @@ use std::sync::Arc;
 use anyhow::anyhow;
 use dotenv::dotenv;
 
-use entity::sea_orm::Database;
+use entity::sea_orm::{Database, DatabaseConnection};
 use oura::sources::IntersectArg;
 use tasks::execution_plan::ExecutionPlan;
 use tracing_subscriber::prelude::*;
@@ -14,6 +14,10 @@ mod postgres_sink;
 mod setup;
 mod types;
 use clap::Parser;
+use crate::postgres_sink::OuraReceiver;
+
+#[cfg(test)]
+mod tests;
 
 #[derive(Parser, Debug)]
 #[clap(version)]
@@ -94,10 +98,12 @@ async fn main() -> anyhow::Result<()> {
 
     let (handles, input) = setup::oura_bootstrap(intersect, &network, socket)?;
 
-    let sink_setup = postgres_sink::Config { conn: &conn };
+    let sink_setup = postgres_sink::Config::new(&conn);
+
+    let input_receiver = OuraReceiver::new(input);
 
     let initial_point = args.start_block.as_ref().map(|_| points.first().unwrap());
-    sink_setup.start(input, exec_plan, initial_point).await?;
+    sink_setup.start(input_receiver, exec_plan, initial_point).await?;
 
     for handle in handles {
         handle.join().map_err(|_| anyhow!(""))?;
@@ -105,3 +111,4 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
+
