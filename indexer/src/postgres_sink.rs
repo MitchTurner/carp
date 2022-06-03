@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 use anyhow::anyhow;
 use oura::{
     model::{BlockRecord, Era, EventData},
@@ -9,6 +10,7 @@ use pallas::ledger::primitives::{
     Fragment,
 };
 use std::sync::{Arc, Mutex};
+use oura::model::Event;
 use tasks::{
     byron::byron_executor::process_byron_block, dsl::database_task::BlockGlobalInfo,
     execution_plan::ExecutionPlan, multiera::multiera_executor::process_multiera_block,
@@ -22,16 +24,47 @@ use entity::{
     prelude::*,
     sea_orm::{prelude::*, ColumnTrait, DatabaseTransaction, TransactionTrait},
 };
-use migration::DbErr;
+use migration::{async_trait, DbErr};
 
-pub struct Config<'a> {
+pub struct Config<'a, Input: InputReceiver> {
     pub conn: &'a DatabaseConnection,
+    _phantom: PhantomData<Input>,
 }
 
-impl<'a> Config<'a> {
+pub trait InputReceiver {
+    fn recv(&self) -> anyhow::Result<Event>;
+}
+
+pub struct OuraReceiver {
+    input: StageReceiver,
+}
+
+impl OuraReceiver {
+    pub fn new(input: StageReceiver) -> Self {
+        OuraReceiver {
+            input
+        }
+    }
+}
+
+impl InputReceiver for OuraReceiver {
+    fn recv(&self) -> anyhow::Result<Event> {
+        let event = self.input.recv()?;
+        Ok(event)
+    }
+}
+
+impl<'a, Input: InputReceiver> Config<'a, Input> {
+    pub fn new(conn: &'a DatabaseConnection) -> Self {
+        Config {
+            conn,
+            _phantom: PhantomData::default()
+        }
+    }
+
     pub async fn start(
         &self,
-        input: StageReceiver,
+        input: Input,
         exec_plan: Arc<ExecutionPlan>,
         initial_point: Option<&PointArg>,
     ) -> anyhow::Result<()> {
