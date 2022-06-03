@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use std::sync::Mutex;
 use oura::model::{BlockRecord, Era, Event, EventData};
 use oura::sources::PointArg;
+use pallas::ledger::primitives::alonzo::Block;
 use entity::sea_orm::MockDatabaseConnector;
 use crate::postgres_sink::{Config, InputReceiver};
 use super::*;
@@ -39,6 +40,16 @@ impl InputReceiver for MockReceiver {
 }
 
 fn some_block_record() -> BlockRecord {
+    let block = Block {
+        header: Header {},
+        transaction_bodies: (),
+        transaction_witness_sets: (),
+        auxiliary_data_set: (),
+        invalid_transactions: None
+    };
+
+
+
     BlockRecord {
         era: Era::Alonzo,
         epoch: None,
