@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs;
 
 use toml::Value;
@@ -23,12 +24,20 @@ impl ExecutionPlan {
     }
 }
 
-impl From<Vec<&str>> for ExecutionPlan {
-    fn from(tasks: Vec<&str>) -> Self {
+impl From<Vec<(&str, HashMap<String, bool>)>> for ExecutionPlan {
+    fn from(tasks: Vec<(&str, HashMap<String, bool>)>) -> Self {
         let map = tasks
             .into_iter()
-            .map(|task| (task.to_string(), Value::Table(toml::value::Table::new())))
+            .map(|(task, hmap)| (task.to_string(), hashmap_into_table(&hmap)))
             .collect();
         ExecutionPlan(map)
     }
+}
+
+fn hashmap_into_table(hmap: &HashMap<String, bool>) -> Value {
+    let map = hmap
+        .iter()
+        .map(|(key, value)| (key.to_string(), Value::Boolean(*value)))
+        .collect();
+    Value::Table(map)
 }
