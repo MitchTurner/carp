@@ -1,22 +1,28 @@
 use crate::alonzo::{Header, HeaderBody, VrfCert};
-use entity::block;
-use entity::block::EraValue;
-use entity::sea_orm::{
-    ConnectionTrait, Database, DatabaseBackend, DatabaseTransaction, DbConn, DbErr, Schema,
-    TransactionTrait,
+use entity::{
+    block,
+    block::EraValue,
+    sea_orm::{
+        ConnectionTrait, Database, DatabaseBackend, DatabaseTransaction, DbConn, DbErr, Schema,
+        TransactionTrait,
+    },
 };
-use pallas::codec::minicbor;
-use pallas::codec::minicbor::bytes::ByteVec;
-use pallas::codec::minicbor::Decode;
-use pallas::codec::utils::{KeyValuePairs, MaybeIndefArray};
-use pallas::crypto::hash::Hash;
-use pallas::ledger::primitives::alonzo;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use tasks::dsl::database_task::BlockGlobalInfo;
-use tasks::execution_plan::ExecutionPlan;
-use tasks::multiera::multiera_executor::process_multiera_block;
-use tasks::utils::TaskPerfAggregator;
+use pallas::{
+    codec::{
+        minicbor::{self, bytes::ByteVec, Decode},
+        utils::{KeyValuePairs, MaybeIndefArray},
+    },
+    crypto::hash::Hash,
+    ledger::primitives::alonzo,
+};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
+use tasks::{
+    dsl::database_task::BlockGlobalInfo, execution_plan::ExecutionPlan,
+    multiera::multiera_executor::process_multiera_block, utils::TaskPerfAggregator,
+};
 
 type OwnedBlockInfo = (String, alonzo::Block, BlockGlobalInfo);
 
@@ -99,7 +105,7 @@ async fn process_multiera_block__can_find_datum() {
     let mut table = HashMap::new();
     table.insert("readonly".to_string(), false);
 
-    let exec_plan = Arc::new(ExecutionPlan::from(vec![("MultieraBlockTask", table)]));
+    let exec_plan = Arc::new(ExecutionPlan::from(vec![("MultiEraDatumTask", table)]));
     let perf_aggregator = new_perf_aggregator();
     let block_info = some_alonzo_block();
 
