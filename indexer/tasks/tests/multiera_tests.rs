@@ -1,4 +1,5 @@
 use crate::alonzo::{Header, HeaderBody, VrfCert};
+use cardano_multiplatform_lib::utils::BigNum;
 use entity::{
     block,
     block::EraValue,
@@ -13,7 +14,7 @@ use pallas::{
         utils::{KeyValuePairs, MaybeIndefArray},
     },
     crypto::hash::Hash,
-    ledger::primitives::alonzo,
+    ledger::primitives::alonzo::{self, TransactionBody},
 };
 use std::{
     collections::HashMap,
@@ -26,8 +27,16 @@ use tasks::{
 
 type OwnedBlockInfo = (String, alonzo::Block, BlockGlobalInfo);
 
+fn some_tx() -> TransactionBody {
+    todo!();
+}
+
 fn some_alonzo_block() -> OwnedBlockInfo {
     let cbor = "".to_string();
+
+    let tx = some_tx();
+
+    let txs = vec![tx];
 
     let block_type = alonzo::Block {
         header: Header {
@@ -50,7 +59,7 @@ fn some_alonzo_block() -> OwnedBlockInfo {
             },
             body_signature: Vec::new().into(),
         },
-        transaction_bodies: MaybeIndefArray::Def(Vec::new()),
+        transaction_bodies: MaybeIndefArray::Def(txs),
         transaction_witness_sets: MaybeIndefArray::Def(Vec::new()),
         auxiliary_data_set: KeyValuePairs::Def(Vec::new()),
         invalid_transactions: None,
@@ -119,5 +128,4 @@ async fn process_multiera_block__can_find_datum() {
     })
     .await
     .unwrap();
-    todo!()
 }

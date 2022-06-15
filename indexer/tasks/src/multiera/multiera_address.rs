@@ -10,7 +10,7 @@ use entity::{
 use pallas::ledger::primitives::alonzo::{
     self, Certificate, TransactionBody, TransactionBodyComponent,
 };
-use pallas::ledger::primitives::Fragment;
+use pallas::ledger::primitives::{Fragment, ToHash};
 use std::ops::Deref;
 
 use crate::{
@@ -53,7 +53,7 @@ carp_task! {
 
 async fn handle_addresses(
     db_tx: &DatabaseTransaction,
-    block: BlockInfo<'_, alonzo::Block>,
+    block: BlockInfo<'_, alonzo::Block<'_>>,
     multiera_txs: &[TransactionModel],
     vkey_relation_map: &mut RelationMap,
 ) -> Result<

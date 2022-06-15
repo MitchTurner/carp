@@ -5,7 +5,7 @@ use entity::{
     sea_orm::{prelude::*, DatabaseTransaction, Set},
 };
 use pallas::ledger::primitives::alonzo::{self, TransactionBody, TransactionBodyComponent};
-use pallas::ledger::primitives::Fragment;
+use pallas::ledger::primitives::{Fragment, ToHash};
 
 use super::multiera_address::MultieraAddressTask;
 use crate::config::ReadonlyConfig::ReadonlyConfig;
@@ -54,7 +54,7 @@ struct QueuedOutput {
 
 async fn handle_output(
     db_tx: &DatabaseTransaction,
-    block: BlockInfo<'_, alonzo::Block>,
+    block: BlockInfo<'_, alonzo::Block<'_>>,
     multiera_txs: &[TransactionModel],
     addresses: &BTreeMap<Vec<u8>, AddressInBlock>,
     readonly: bool,
