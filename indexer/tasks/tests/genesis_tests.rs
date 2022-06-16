@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+
 use crate::genesis_helpers::{
     addr_as_byron, addr_to_tx_hash, arbitrary_block, db_address_as_byron,
     db_output_as_byron_and_coin, db_tx_to_tx_hash_and_byron, in_memory_db_conn, mainnet_block_info,
@@ -16,6 +17,7 @@ use entity::{
 };
 use genesis_helpers::GenesisBlockBuilder;
 use proptest::prelude::*;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use tasks::{
     execution_plan::ExecutionPlan, genesis::genesis_executor::process_genesis_block,
@@ -65,7 +67,10 @@ async fn process_genesis_block__when_genesis_block_task_then_added_to_db() {
     let conn = in_memory_db_conn().await;
     setup_schema(&conn).await;
     let block_info = GenesisBlockBuilder::default().build();
-    let exec_plan = Arc::new(ExecutionPlan::from(vec!["GenesisBlockTask"]));
+    let exec_plan = Arc::new(ExecutionPlan::from(vec![(
+        "GenesisBlockTask",
+        HashMap::new(),
+    )]));
     let perf_aggregator = new_perf_aggregator();
 
     let expected = block::Model {
@@ -153,8 +158,8 @@ async fn inner__process_genesis_block__when_genesis_tx_task_then_txns_in_db_with
         .collect();
 
     let exec_plan = Arc::new(ExecutionPlan::from(vec![
-        "GenesisBlockTask",
-        "GenesisTransactionTask",
+        ("GenesisBlockTask", HashMap::new()),
+        ("GenesisTransactionTask", HashMap::new()),
     ]));
     let perf_aggregator = new_perf_aggregator();
 
@@ -238,8 +243,8 @@ async fn inner__process_genesis_block__when_genesis_tx_task_then_outputs_in_db(
         .collect();
 
     let exec_plan = Arc::new(ExecutionPlan::from(vec![
-        "GenesisBlockTask",
-        "GenesisTransactionTask",
+        ("GenesisBlockTask", HashMap::new()),
+        ("GenesisTransactionTask", HashMap::new()),
     ]));
     let perf_aggregator = new_perf_aggregator();
 
@@ -324,8 +329,8 @@ async fn inner__process_genesis_block__when_genesis_tx_task_then_address_in_db(
         .collect();
 
     let exec_plan = Arc::new(ExecutionPlan::from(vec![
-        "GenesisBlockTask",
-        "GenesisTransactionTask",
+        ("GenesisBlockTask", HashMap::new()),
+        ("GenesisTransactionTask", HashMap::new()),
     ]));
     let perf_aggregator = new_perf_aggregator();
 
